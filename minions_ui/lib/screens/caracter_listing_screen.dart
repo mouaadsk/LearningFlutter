@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:minions_ui/models/caracters.dart';
 import 'package:minions_ui/styles.dart';
 import 'package:minions_ui/widgets/character_widget.dart';
-
 
 class CaracterListingPage extends StatefulWidget {
   @override
@@ -9,6 +9,18 @@ class CaracterListingPage extends StatefulWidget {
 }
 
 class _CaracterListingPageState extends State<CaracterListingPage> {
+  PageController _pageController;
+  int _currentPage = 0;
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      viewportFraction: 1.0,
+      keepPage: false,
+      initialPage: _currentPage,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,14 +34,14 @@ class _CaracterListingPageState extends State<CaracterListingPage> {
         ],
       ),
       body: SafeArea(
-          child: Column(
+        child: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(left: 20.0,top: 10.0),
+              padding: const EdgeInsets.only(left: 20.0, top: 10.0),
               child: RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(text: 'Despicable Me',style: AppTheme.display1),
+                    TextSpan(text: 'Despicable Me', style: AppTheme.display1),
                     TextSpan(text: '\n'),
                     TextSpan(text: 'Characters', style: AppTheme.display2),
                   ],
@@ -37,9 +49,17 @@ class _CaracterListingPageState extends State<CaracterListingPage> {
               ),
             ),
             Expanded(
-              child: Caracter(),
+              child: PageView(
+                controller: _pageController,
+                children: <Widget>[
+                  for (var i = 0; i < characters.length; i++) 
+                      Caracter(character: characters[i],controller: _pageController,currentPage: i,)
+                ],
+              ),
             ),
-                    SizedBox(height: 20.0,),
+            SizedBox(
+              height: 20.0,
+            ),
           ],
         ),
       ),
