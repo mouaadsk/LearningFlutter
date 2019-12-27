@@ -2,7 +2,6 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:minions_ui/models/caracters.dart';
 import 'package:minions_ui/styles.dart';
-import 'package:minions_ui/widgets/character_widget.dart';
 
 class CaracterDetailScreen extends StatefulWidget {
   final Character character;
