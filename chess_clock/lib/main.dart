@@ -6,6 +6,7 @@ import 'package:chess_clock/onOffChess.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:chess_clock/enums.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
@@ -35,13 +36,13 @@ class _ChessClockState extends State<ChessClock> {
   AudioCache audioCache;
   int _secondesPicker, _minutesPicker, _houresPicker;
   List<Clock> timers = [Clock(), Clock(), Clock()];
-  int activeTimer = 2;
+  int activeTimer = 2, incrementSecondes;
   @override
   void initState() {
     super.initState();
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
-        timers[activeTimer].addSeconde();
+        timers[activeTimer].downSeconde();
       });
     });
     audioCache = AudioCache(fixedPlayer: advancedPlayer);
@@ -64,8 +65,11 @@ class _ChessClockState extends State<ChessClock> {
                   InkWell(
                     enableFeedback: false,
                     onTap: () {
-                      activeTimer = 1;
-                      audioCache.play('sounds/tap_1.mp3');
+                      setState(() {
+                        activeTimer = 1;
+                        audioCache.play('sounds/tap_1.mp3');
+                        timers[0].addSeconde(added: incrementSecondes);
+                      });
                     },
                     child: Container(
                       color: Colors.brown,
@@ -87,8 +91,11 @@ class _ChessClockState extends State<ChessClock> {
                   InkWell(
                     enableFeedback: false,
                     onTap: () {
-                      activeTimer = 0;
-                      audioCache.play('sounds/tap_1.mp3');
+                      setState(() {
+                        activeTimer = 0;
+                        audioCache.play('sounds/tap_1.mp3');
+                        timers[1].addSeconde(added: incrementSecondes);
+                      });
                     },
                     child: Container(
                       color: Colors.amber,
@@ -106,10 +113,11 @@ class _ChessClockState extends State<ChessClock> {
                   ),
                 ],
               ),
-              Center(
+              Align(
+                alignment: Alignment.center,
                 child: IconButton(
-                    icon: Icon(Icons.settings),
-                    iconSize: screenWidth * 0.20,
+                    icon: Icon(FontAwesomeIcons.slidersH),
+                    iconSize: screenWidth * 0.15,
                     color: Colors.grey,
                     onPressed: () => showDialog(
                         context: context,
@@ -159,11 +167,11 @@ class _ChessClockState extends State<ChessClock> {
                               _labels['secondesClicked'] = true;
                             }
                           });
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              return ChangeNotifierProvider<ChessSwitch>(
-                                create: (context) => ChessSwitch(),
-                                child: AlertDialog(
+                          return ChangeNotifierProvider(
+                            create: (context) => ChessSwitch(),
+                            child: StatefulBuilder(
+                              builder: (context, setState) {
+                                return AlertDialog(
                                   title: Text('Settings'),
                                   content: SingleChildScrollView(
                                     child: Form(
@@ -183,12 +191,6 @@ class _ChessClockState extends State<ChessClock> {
                                                 child: TextFormField(
                                                   controller:
                                                       _inputControllers[0],
-                                                  onEditingComplete: () {
-                                                    setState(() {
-                                                      _labels['houresClicked'] =
-                                                          false;
-                                                    });
-                                                  },
                                                   textAlign: TextAlign.center,
                                                   keyboardType:
                                                       TextInputType.number,
@@ -219,12 +221,6 @@ class _ChessClockState extends State<ChessClock> {
                                                 child: TextFormField(
                                                   controller:
                                                       _inputControllers[1],
-                                                  onEditingComplete: () {
-                                                    setState(() {
-                                                      _labels['minutesClicked'] =
-                                                          false;
-                                                    });
-                                                  },
                                                   textAlign: TextAlign.center,
                                                   keyboardType:
                                                       TextInputType.number,
@@ -256,12 +252,6 @@ class _ChessClockState extends State<ChessClock> {
                                                 child: TextFormField(
                                                   controller:
                                                       _inputControllers[2],
-                                                  onEditingComplete: () {
-                                                    setState(() {
-                                                      _labels['secondesClicked'] =
-                                                          false;
-                                                    });
-                                                  },
                                                   textAlign: TextAlign.center,
                                                   keyboardType:
                                                       TextInputType.number,
@@ -288,25 +278,52 @@ class _ChessClockState extends State<ChessClock> {
                                           SizedBox(
                                             height: 10,
                                           ),
-                                          onOffChess(),
+                                          OnOffChess(),
                                         ],
                                       ),
                                     ),
                                   ),
                                   actions: <Widget>[
-                                    IconButton(
-                                      icon: Icon(Icons.swap_horizontal_circle),
-                                      iconSize: screenWidth * 0.10,
-                                      onPressed: () {
-                                        print(this._secondesPicker);
-                                        ChessSwitch chessSwitch =
-                                            Provider.of<ChessSwitch>(context);
-                                      },
-                                    ),
+                                    Consumer<ChessSwitch>(
+                                        builder: (context, chessSwitch, child) {
+                                      return IconButton(
+                                        icon:
+                                            Icon(FontAwesomeIcons.gamepad),
+                                        iconSize: screenWidth * 0.10,
+                                        onPressed: () {
+                                          timers[0] = Clock(
+                                              secondes: (_houresPicker == null
+                                                          ? 0
+                                                          : _houresPicker) *
+                                                      3600 +
+                                                  (_minutesPicker == null
+                                                          ? 0
+                                                          : _minutesPicker) *
+                                                      60 +
+                                                  (_secondesPicker == null
+                                                      ? 0
+                                                      : _secondesPicker));
+                                          timers[1] = Clock(
+                                              secondes: (_houresPicker == null
+                                                          ? 0
+                                                          : _houresPicker) *
+                                                      3600 +
+                                                  (_minutesPicker == null
+                                                          ? 0
+                                                          : _minutesPicker) *
+                                                      60 +
+                                                  (_secondesPicker == null
+                                                      ? 0
+                                                      : _secondesPicker));
+                                          incrementSecondes = chessSwitch.chessSwitchEnum == ChessSwitchEnum.left?0:chessSwitch.increment;
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    }),
                                   ],
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           );
                         })),
               )

@@ -2,30 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:chess_clock/enums.dart';
 import 'package:provider/provider.dart';
 
-class onOffChess extends StatefulWidget {
-  
+class OnOffChess extends StatefulWidget {
   @override
-  _onOffChessState createState() => _onOffChessState();
+  _OnOffChessState createState() => _OnOffChessState();
 }
 
-class _onOffChessState extends State<onOffChess>
+class _OnOffChessState extends State<OnOffChess>
     with SingleTickerProviderStateMixin {
-    ChessSwitch chessSwitch = ChessSwitch(),providerChessSwitch;
+  ChessSwitch providerChessSwitch;
   void toggleSwitch() {
-    if (chessSwitch.chessSwitchEnum == ChessSwitchEnum.left) {
+    if (providerChessSwitch.chessSwitchEnum == ChessSwitchEnum.left) {
       this._chessSwitchController.forward();
-    } else if (chessSwitch.chessSwitchEnum == ChessSwitchEnum.right) {
+    } else if (providerChessSwitch.chessSwitchEnum == ChessSwitchEnum.right) {
       this._chessSwitchController.reverse();
     }
   }
 
   List<Image> imagesAssets = [
-    Image.asset('assets/images/black king.png'),
-    Image.asset('assets/images/white king.png')
+    Image.asset(
+      'assets/images/black king.png',fit: BoxFit.cover,),
+    Image.asset('assets/images/white king.png',fit: BoxFit.cover,)
   ];
   Image currentImage;
   AnimationController _chessSwitchController;
   Animation _animation;
+  TextEditingController incrementController = TextEditingController();
+  int increment = 0;
   @override
   void initState() {
     super.initState();
@@ -35,52 +37,113 @@ class _onOffChessState extends State<onOffChess>
     _animation.addListener(() {
       setState(() {
         if (this._animation.value > 0.5 &&
-            chessSwitch.chessSwitchEnum == ChessSwitchEnum.leftToRight) {
+            providerChessSwitch.chessSwitchEnum ==
+                ChessSwitchEnum.leftToRight) {
           this.currentImage = imagesAssets[1];
         } else if (this._animation.value < 0.5 &&
-            chessSwitch.chessSwitchEnum == ChessSwitchEnum.rightToLeft) {
+            providerChessSwitch.chessSwitchEnum ==
+                ChessSwitchEnum.rightToLeft) {
           this.currentImage = imagesAssets[0];
         }
       });
     });
     _animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed)
-        chessSwitch.changeChessSwitch(ChessSwitchEnum.right);
-      else if (status == AnimationStatus.dismissed)
-        chessSwitch.changeChessSwitch(ChessSwitchEnum.left);
-      else if (status == AnimationStatus.forward)
-        chessSwitch.changeChessSwitch(ChessSwitchEnum.leftToRight);
+      if (status == AnimationStatus.completed) {
+        providerChessSwitch.changeChessSwitch(ChessSwitchEnum.right);
+      } else if (status == AnimationStatus.dismissed) {
+        providerChessSwitch.changeChessSwitch(ChessSwitchEnum.left);
+      } else if (status == AnimationStatus.forward)
+        providerChessSwitch.changeChessSwitch(ChessSwitchEnum.leftToRight);
       else
-        chessSwitch.changeChessSwitch(ChessSwitchEnum.rightToLeft);
+        providerChessSwitch.changeChessSwitch(ChessSwitchEnum.rightToLeft);
     });
     this.currentImage = imagesAssets[0];
+    incrementController.addListener(() {
+      if (incrementController.text.isEmpty ||
+          incrementController.text == null) {
+      } else {
+        providerChessSwitch
+            .changeIncrement(int.parse(incrementController.text));
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     providerChessSwitch = Provider.of<ChessSwitch>(context);
-    return Container(
-      width: screenWidth * 0.2,
+    return providerChessSwitch.chessSwitchEnum == ChessSwitchEnum.left ?  Container(
+      width: double.infinity,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Transform.translate(
-            offset: Offset(screenWidth * 0.1 * this._animation.value, 0),
-            child: Container(
-              color: Colors.amber,
-              child: IconButton(
-                icon: this.currentImage,
-                onPressed: () {
-                  setState(() {
-                    toggleSwitch();
-                    providerChessSwitch = this.chessSwitch;
-                  });
-                },
+          Container(
+            width: screenWidth * 0.15,
+            alignment: Alignment.centerLeft,
+            child: Transform.translate(
+              offset: Offset(screenWidth * 0.05 * this._animation.value, 0),
+              child: Container(
+                width: screenWidth * 0.1,
+                child: IconButton(
+                  enableFeedback: false,
+                  icon: this.currentImage,
+                  onPressed: () {
+                    setState(() {
+                      toggleSwitch();
+                    });
+                  },
+                ),
               ),
             ),
-          )
+          ),
+        ],
+      ),
+    ): Container(
+      width: double.infinity,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            width: screenWidth * 0.15,
+            alignment: Alignment.centerLeft,
+            child: Transform.translate(
+              offset: Offset(screenWidth * 0.05 * this._animation.value, 0),
+              child: Container(
+                width: screenWidth * 0.1,
+                child: IconButton(
+                  enableFeedback: false,
+                  icon: this.currentImage,
+                  onPressed: () {
+                    setState(() {
+                      toggleSwitch();
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Container(
+            width: screenWidth * 0.40,
+            child: TextFormField(
+              controller: incrementController,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                ),
+                focusColor: Colors.amber,
+                labelText: "Increment Secondes",
+                alignLabelWithHint: true,
+                hintText: 'Add Increment Secondes',
+              ),
+            ),
+          ),
         ],
       ),
     );
