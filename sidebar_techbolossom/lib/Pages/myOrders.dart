@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sidebar_techbolossom/navigation_blocks/navigation_block.dart';
 
-class MyOrders extends StatelessWidget {
+class MyOrders extends StatelessWidget with NavigationStates{
   @override
   Widget build(BuildContext context) {
     return Center(
